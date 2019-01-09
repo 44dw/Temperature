@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddDrug">
+
+    <LinearLayout
+        android:id="@+id/horizontalDrugHolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/drugName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:layout_marginEnd="3dp"
+            android:layout_marginBottom="20dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:ems="10"
+            android:hint="@string/drugs_name_hint"
+            android:background="@color/white"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/drugAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:layout_marginEnd="3dp"
+            android:layout_marginBottom="20dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:ems="10"
+            android:hint="@string/drugs_amount_hint"
+            android:background="@color/white"
+            android:inputType="number|numberDecimal" />
+
+        <Spinner
+            android:id="@+id/drugUnits"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="6"
+            android:layout_marginBottom="20dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:background="@color/white"
+            android:entries="@array/drugUnits" />
+
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/addDrugName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClickListener"
+        app:backgroundTint="@android:color/holo_orange_light"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_check" />
+
+    <LinearLayout
+        android:id="@+id/addDrugHintLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/drugEarly"/>
+
+    <TextView
+        android:id="@+id/drugEarly"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/light_blue"
+        android:text="@string/add_drugs_early"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/horizontalDrugHolder" />
+
+</android.support.constraint.ConstraintLayout>

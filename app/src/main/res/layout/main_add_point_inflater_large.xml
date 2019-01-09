@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/temperatureLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="30dp"
+    android:background="@drawable/main_gradient_background_green"
+    android:onClick="onClickListener">
+
+    <LinearLayout
+        android:id="@+id/timeDateLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/addPointDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@+id/addPointDrugPic"
+            app:layout_constraintEnd_toStartOf="@+id/addPointDrugPic"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/addPointTime"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="top|center_horizontal"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/addPointDrugPic"
+            app:layout_constraintEnd_toStartOf="@+id/addPointDrugPic"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/addPointNoteLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/addPointDrugLayout"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/timeDateLayout"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/addPointNotePic"
+            android:layout_width="28dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            android:visibility="visible"
+            app:srcCompat="@drawable/ic_writing" />
+
+        <TextView
+            android:id="@+id/addPointNote"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/addPointDrugLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/addPointSymptLayout"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/addPointNoteLayout"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/addPointDrugPic"
+            android:layout_width="28dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            app:srcCompat="@drawable/ic_medicine_grey" />
+
+        <TextView
+            android:id="@+id/addPointDrug"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/addPointSymptLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/addPointDrugLayout"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/addPointSPic"
+            android:layout_width="28dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            app:srcCompat="@drawable/ic_s_grey" />
+
+        <TextView
+            android:id="@+id/addPointSympt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

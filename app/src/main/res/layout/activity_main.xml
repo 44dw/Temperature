@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tempScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/mainGreetHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.2" />
+
+        <ImageView
+            android:id="@+id/mainGreetBlanc"
+            android:layout_width="164dp"
+            android:layout_height="165dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guideline4"
+            app:srcCompat="@drawable/ic_blank2" />
+
+        <TextView
+            android:id="@+id/mainGreetText1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/main_greeter1"
+            app:layout_constraintStart_toStartOf="@+id/mainGreetBlanc"
+            app:layout_constraintTop_toBottomOf="@+id/mainGreetBlanc" />
+
+        <ImageView
+            android:id="@+id/mainGreetImagePlus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/mainGreetText1"
+            app:layout_constraintTop_toBottomOf="@+id/mainGreetText1"
+            app:srcCompat="@drawable/ic_plus" />
+
+        <TextView
+            android:id="@+id/mainGreetText3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="11dp"
+            android:text="@string/main_greeter3"
+            app:layout_constraintStart_toEndOf="@+id/mainGreetImagePlus"
+            app:layout_constraintTop_toBottomOf="@+id/mainGreetText1" />
+
+        <ImageView
+            android:id="@+id/mainGreetImageDots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/mainGreetImagePlus"
+            app:layout_constraintTop_toBottomOf="@+id/mainGreetImagePlus"
+            app:srcCompat="@drawable/ic_vertical_dots" />
+
+        <TextView
+            android:id="@+id/mainGreetText5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="11dp"
+            android:text="@string/main_greeter5"
+            app:layout_constraintStart_toEndOf="@+id/mainGreetImageDots"
+            app:layout_constraintTop_toBottomOf="@+id/mainGreetText3" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <ScrollView
+        android:id="@+id/ScrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:scrollbars="none"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/mainTempLinesHolder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/createPoint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClickListener"
+        app:backgroundTint="@android:color/holo_orange_light"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_plus" />
+
+</android.support.constraint.ConstraintLayout>

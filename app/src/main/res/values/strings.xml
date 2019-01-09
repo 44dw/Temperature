@@ -1,0 +1,116 @@
+<resources>
+    <string name="app_name">Ти</string>
+    <string name="button_send">Отправить</string>
+    <string name="generator_descr_temp">Температура</string>
+    <string name="descr_temp">t</string>
+    <string name="descr_drugs">Лекарства</string>
+    <string name="descr_sympt">Сиптомы</string>
+    <string name="descr_time">Время</string>
+    <string name="descr_note">Заметки</string>
+    <string name="add_temp">Укажите температуру</string>
+    <string name="button_addPoint">Добавить</string>
+    <string name="temp_input">Укажите температуру</string>
+    <string name="symptoms_switch">Есть симптомы</string>
+    <string name="drugs_switch">Дали лекарство</string>
+    <string name="drugs_name_hint">Лекарство</string>
+    <string name="drugs_amount_hint">Кол-во</string>
+    <string name="sympt_hint">Сиптом</string>
+    <string name="focus_drugs">Дали лекарства</string>
+    <string name="focus_symptoms">Есть симптомы</string>
+    <string name="menu_history">История болезни</string>
+    <string name="menu_change">Сменить больного</string>
+    <string name="menu_about">О программе</string>
+    <string name="menu_clear">Очистить главное окно</string>
+    <string name="menu_ok">Готово</string>
+    <string name="history_who">Историю какого больного вы хотели бы посмотреть?</string>
+    <string name="add_drugs_early">Ранее давали:</string>
+    <string name="add_sympt_early">Прошлые симптомы:</string>
+    <string name="dialog_new_name">Имя нового больного</string>
+    <string name="dialog_who">Кто заболел?</string>
+    <string name="generator_add_note_descr">Добавьте примечание</string>
+    <string name="focus_note_descr">Примечание</string>
+    <string name="focus_note_add">добавить/редактировать</string>
+    <string name="focus_drug_sympt_add">добавить</string>
+    <string name="focus_del">удалить запись</string>
+    <string name="deldialog_title">Внимание!</string>
+    <string name="deldialog_shure_del_line">Запись будет удалена. Вы уверены?</string>
+    <string name="deldialog_shure_del_name">История больного будет удалена. Вы уверены?</string>
+    <string name="deldialog_ok">ОК</string>
+    <string name="deldialog_cancel">Отмена</string>
+    <string name="main_greeter1">Померили температуру?</string>
+    <string name="main_greeter2">Нажмите на</string>
+    <string name="main_greeter3">- добавить запись,</string>
+    <string name="main_greeter4">или на </string>
+    <string name="main_greeter5">- посмотреть историю</string>
+    <string name="credits_name"><b>Ти</b> - маленький дневник температуры</string>
+    <string name="credits_ver">Версия</string>
+    <string name="credits_author">by Дмитрий Ахметшин, все права сохранены</string>
+    <string name="credits_stars">Если вам понравилось приложение, уделите минутку, чтобы оценить его</string>
+    <string name="credits_mail">Написать автору</string>
+    <string name="credits_support">Приложение бесплатно, но вы можете поддержать автора через Яндекс Кошелёк: 410016300420540</string>
+    <string name="credits_free_icons">Использованы графические материалы из открытых источников:</string>
+    <string name="credits_greeter_blanc">предоставлено icons8.ru</string>
+    <string name="credits_note_icon">предоставлено <b>Freepik</b> с flaticon.com</string>
+    <string name="credits_license">Лицензии</string>
+    <string name="credits_creative_commons">creativecommons.org/licenses/by-nd/3.0/</string>
+    <string name="credits_flaticon">profile.flaticon.com/license/free</string>
+    <string name="history_warning">Пожалуйста, поверните устройство горизонтально, чтобы продолжить</string>
+    <string name="title_activity_add_drugs">AddDrugs</string>
+    <string name="title_activity_add_sympt">AddSympt</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="generator_when_hint">Дата/время:</string>
+    <string name="generator_date_now">сейчас</string>
+    <string name="temp_input_empty">Поле может быть пустым</string>
+    <string name="clear_all">Всё</string>
+    <string name="clear_but">Оставить только последние записи</string>
+    <string name="clear_title">Что удаляем?</string>
+    <string name="dialog_date_header">Выберите дату</string>
+    <string name="menu_prefs">Настройки</string>
+    <string name="prefs_num_lines_title">Записей на экране</string>
+    <string name="prefs_num_lines_dialog_title">Выберите число</string>
+    <string name="pref_open_default">0</string>
+    <string name="prefs_open_title">При смене больного</string>
+    <string name="dialog_whatsnew">Что нового</string>
+    <string name="ver101">Версия 1.0.1</string>
+    <string name="ver101body">+ Возможность делать записи \"задним числом\"\n+ Экран настроек\n+ Возможность загрузки последних записей при смене больного\n+ Возможность оставить на экране только последние записи\n+ Колоризация имён больных\n+ Исправлены ошибки и устранены утечки памяти</string>
+
+    <string-array name="drugUnits">
+        <item>табл.</item>
+        <item>капель</item>
+        <item>г.</item>
+        <item>мг.</item>
+        <item>доз</item>
+    </string-array>
+
+    <string-array name="pref_entries_lines">
+        <item>6</item>
+        <item>12</item>
+        <item>15</item>
+        <item>18</item>
+        <item>20</item>
+        <item>23</item>
+        <item>25</item>
+        <item>Не ограничено</item>
+    </string-array>
+    <string-array name="pref_values_lines">
+        <item>6</item>
+        <item>12</item>
+        <item>15</item>
+        <item>18</item>
+        <item>20</item>
+        <item>23</item>
+        <item>25</item>
+        <item>-1</item>
+    </string-array>
+    <string name="pref_lines_default">15</string>
+
+    <string-array name="pref_entries_open">
+        <item>Пустой экран</item>
+        <item>Последние записи</item>
+    </string-array>
+    <string-array name="pref_values_open">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+</resources>

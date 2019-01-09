@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/historyVertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/historyTableDateHolder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1"
+        android:background="@color/dateBlue"
+        android:onClick="onClickListener"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:text=""
+        android:textAlignment="center"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/dateBlueDark"/>
+
+    <TableLayout
+        android:id="@+id/historyTable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:id="@+id/historyTableRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/historyTimeDescr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/zukkini"
+                android:gravity="center_horizontal"
+                android:text="@string/descr_time" />
+
+            <TextView
+                android:id="@+id/historyTempDescr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/zukkiniDark"
+                android:gravity="center_horizontal"
+                android:text="@string/descr_temp" />
+
+            <TextView
+                android:id="@+id/historySymptDescr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/zukkini"
+                android:gravity="center_horizontal"
+                android:text="@string/descr_sympt" />
+
+            <TextView
+                android:id="@+id/historyDrugDescr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/zukkiniDark"
+                android:gravity="center_horizontal"
+                android:text="@string/descr_drugs" />
+
+            <TextView
+                android:id="@+id/historyNoteDescr"
+                android:layout_width="15dp"
+                android:minWidth="15dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/zukkini"
+                android:gravity="center_horizontal"
+                android:text="" />
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>

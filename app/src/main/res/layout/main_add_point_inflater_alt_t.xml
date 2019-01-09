@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/temperatureLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:onClick="onClickListener"
+    android:layout_marginBottom="30dp"
+    android:background="@drawable/main_gradient_background_green"
+    tools:layout_editor_absoluteY="25dp">
+
+    <TextView
+        android:id="@+id/addPointDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:gravity="center"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addPointRedline" />
+
+    <TextView
+        android:id="@+id/addPointTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:gravity="top|center_horizontal"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addPointRedline" />
+
+
+    <ImageView
+        android:id="@+id/addPointScale"
+        android:layout_width="0dp"
+        android:layout_height="43dp"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/scale_crop" />
+
+    <ImageView
+        android:id="@+id/addPointRedline"
+        android:layout_width="0dp"
+        android:layout_height="7dp"
+        app:layout_constraintStart_toStartOf="@+id/addPointScale"
+        app:layout_constraintTop_toBottomOf="@+id/addPointScale"
+        app:srcCompat="@android:color/holo_red_dark" />
+
+    <ImageView
+        android:id="@+id/addPointNotePic"
+        android:layout_width="28dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="8dp"
+        android:padding="4dp"
+        app:layout_constraintEnd_toStartOf="@+id/addPointDrugPic"
+        app:layout_constraintTop_toBottomOf="@+id/addPointRedline"
+        app:srcCompat="@drawable/ic_writing" />
+
+    <ImageView
+        android:id="@+id/addPointDrugPic"
+        android:layout_width="28dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:padding="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addPointRedline"
+        app:srcCompat="@drawable/ic_medicine_grey" />
+
+    <ImageView
+        android:id="@+id/addPointSPic"
+        android:layout_width="28dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="6dp"
+        android:padding="4dp"
+        app:layout_constraintStart_toEndOf="@+id/addPointDrugPic"
+        app:layout_constraintTop_toBottomOf="@+id/addPointRedline"
+        app:srcCompat="@drawable/ic_s_grey" />
+
+</android.support.constraint.ConstraintLayout>

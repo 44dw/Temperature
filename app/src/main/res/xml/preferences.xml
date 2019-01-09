@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="prefs_key_lines"
+        android:title="@string/prefs_num_lines_title"
+        android:dialogTitle="@string/prefs_num_lines_dialog_title"
+        android:entries="@array/pref_entries_lines"
+        android:entryValues="@array/pref_values_lines"
+        android:defaultValue="@string/pref_lines_default"
+        android:summary="%s" />
+    <ListPreference
+        android:key="prefs_key_open"
+        android:title="@string/prefs_open_title"
+        android:dialogTitle="@string/prefs_open_title"
+        android:entries="@array/pref_entries_open"
+        android:entryValues="@array/pref_values_open"
+        android:defaultValue="@string/pref_open_default"
+        android:summary="%s" />
+</PreferenceScreen>
