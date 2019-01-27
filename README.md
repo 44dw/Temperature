@@ -9,4 +9,4 @@
 
 Google Play: https://play.google.com/store/apps/details?id=com.a44dw.temperature
 
-Выполнено в летом 2018
+Выполнено летом 2018
