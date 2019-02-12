@@ -26,29 +26,29 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PointGenerator"
+            android:name=".activities.PointGenerator"
             android:screenOrientation="portrait" />
         <!-- adjustPan декларирует, что при появлении клавиатуры невидимые элементы остаются под ней -->
         <activity
-            android:name=".FocusPoint"
+            android:name=".activities.FocusPoint"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <!-- adjustResize декларирует, что при появлении клавиатуры невидимые элементы подпрыгивают над ней -->
         <activity
-            android:name=".AddDrug"
+            android:name=".activities.AddDrug"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".AddSympt"
+            android:name=".activities.AddSympt"
             android:windowSoftInputMode="adjustResize" />
         <!-- configChanges декларирует, что активность не будет перезапущена при изменении ориентации и все фрагменты сохранят свои состояния -->
         <activity
-            android:name=".History"
+            android:name=".activities.History"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".AddNote"
+            android:name=".activities.AddNote"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".Credits"/>
-        <activity android:name=".Preferences"
+        <activity android:name=".activities.Credits"/>
+        <activity android:name=".activities.Preferences"
             android:label="@string/menu_prefs"
             android:windowSoftInputMode="adjustResize" />
     </application>

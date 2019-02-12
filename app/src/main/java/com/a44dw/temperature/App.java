@@ -3,10 +3,13 @@ package com.a44dw.temperature;
 import android.app.Application;
 import android.arch.persistence.room.Room;
 
+import com.a44dw.temperature.database.AppDatabase;
+import com.a44dw.temperature.entities.SickPerson;
+
 public class App extends Application {
 
     //единственный экземпляр Application
-    public static App instance;
+    private static App instance;
 
     private static SickPerson appPerson;
 

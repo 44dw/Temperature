@@ -23,6 +23,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import com.a44dw.temperature.activities.Credits;
+import com.a44dw.temperature.activities.FocusPoint;
+import com.a44dw.temperature.activities.History;
+import com.a44dw.temperature.activities.PointGenerator;
+import com.a44dw.temperature.activities.Preferences;
+import com.a44dw.temperature.database.AppDatabase;
+import com.a44dw.temperature.dialogs.ClearScreenDialog;
+import com.a44dw.temperature.dialogs.PickSickDialog;
+import com.a44dw.temperature.entities.Note;
+import com.a44dw.temperature.entities.SickPerson;
+import com.a44dw.temperature.entities.Temperature;
+import com.a44dw.temperature.pojo.ConcreteTemperatureDrug;
+import com.a44dw.temperature.pojo.Point;
 import com.google.gson.Gson;
 
 import java.text.ParseException;
@@ -39,7 +53,7 @@ import java.util.concurrent.ExecutionException;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-public class MainActivity extends AppCompatActivity implements PickSickDialogFragment.PickSickDialogListener,
+public class MainActivity extends AppCompatActivity implements PickSickDialog.PickSickDialogListener,
                                                                ClearScreenDialog.ClearScreenDialogListener {
 
     private static PointGeneratorDialog generatorDialog;
@@ -490,11 +504,7 @@ public class MainActivity extends AppCompatActivity implements PickSickDialogFra
                 //создаём точку
                 Object[] createdThing = generatorDialog.createPoint(nowTemp, drugArray, symptArray, time, date, tempId, note, false, changedDateTime);
 
-                int position = (int)createdThing[1];
-                ConstraintLayout line = (ConstraintLayout) createdThing[0];
-
-                if(position < 0) mainLinesHolder.addView(line);
-                else mainLinesHolder.addView(line, position);
+                putEntry(createdThing);
             }
         }
         if(requestCode == REQUEST_CODE_FOCUSPOINT) {
@@ -538,9 +548,46 @@ public class MainActivity extends AppCompatActivity implements PickSickDialogFra
             if(requestCode == REQUEST_CODE_HISTORY) {
                 if (resultCode == RESULT_OK) {
                     if(data.getBooleanExtra(History.EXTRA_CHANGE, false)) changeTitle();
+                    else if(data.hasExtra(History.EXTRA_SHOW_ON_MAIN)) {
+                        SickPerson personToShow = (SickPerson) data.getSerializableExtra(History.EXTRA_CHOSEN_NAME);
+                        ArrayList<Point> poinsToShow = (ArrayList<Point>) data.getSerializableExtra(History.EXTRA_SHOW_ON_MAIN);
+                        SickPerson appPerson = App.getInstance().getPerson();
+                        if(!appPerson.equals(personToShow)) {
+                            App.getInstance().setPerson(personToShow);
+                            setTitle();
+                        }
+                        clearMainScreen(false);
+                        if(poinsToShow.size() > numOfLines) {
+                            numOfLines = findNeededMinLinesNum(poinsToShow.size());
+                            PreferenceManager.getDefaultSharedPreferences(this).edit()
+                                    .putString(Preferences.NUM_LINES, String.valueOf(numOfLines))
+                                    .apply();
+                        }
+                        for (Point point : poinsToShow) {
+                            mainLinesHolder.addView(generatorDialog.createPoint(point, false));
+                        }
+                        scrollDown();
+                    }
                 }
             }
         }
+
+    private int findNeededMinLinesNum(int size) {
+        String[] numLinesArray = getResources().getStringArray(R.array.pref_values_lines);
+        for(String stringNum : numLinesArray) {
+            int nowNum = Integer.valueOf(stringNum);
+            if(nowNum >= size) return nowNum;
+        }
+        return -1;
+    }
+
+    private void putEntry(Object[] createdThing) {
+        int position = (int)createdThing[1];
+        ConstraintLayout line = (ConstraintLayout) createdThing[0];
+
+        if(position < 0) mainLinesHolder.addView(line);
+        else mainLinesHolder.addView(line, position);
+    }
 
 
     //создаёт меню в "шапке"
@@ -556,7 +603,6 @@ public class MainActivity extends AppCompatActivity implements PickSickDialogFra
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         switch (id) {
             case R.id.menu_clear:
                 new ClearScreenDialog().show(getSupportFragmentManager(), "ClearScreenDialog");
@@ -566,7 +612,7 @@ public class MainActivity extends AppCompatActivity implements PickSickDialogFra
                 startActivity(intentCredits);
                 return true;
             case R.id.menu_change:
-                new PickSickDialogFragment().show(getSupportFragmentManager(), "PickSickDialog");
+                new PickSickDialog().show(getSupportFragmentManager(), "PickSickDialog");
                 return true;
             case R.id.menu_prefs:
                 Intent intentPrefs = new Intent(getApplicationContext(), Preferences.class);
@@ -642,9 +688,7 @@ public class MainActivity extends AppCompatActivity implements PickSickDialogFra
         if(points.size() == 0) return;
         switch (what) {
             case ClearScreenDialog.DIALOG_CLEAR_ALL: {
-                mainLinesHolder.removeAllViews();
-                points.clear();
-                greeter.setVisibility(VISIBLE);
+                clearMainScreen(true);
                 break;
             }
             case ClearScreenDialog.DIALOG_CLEAR_BUT: {
@@ -666,6 +710,12 @@ public class MainActivity extends AppCompatActivity implements PickSickDialogFra
                 break;
             }
         }
+    }
+
+    private void clearMainScreen(boolean showGreeter) {
+        mainLinesHolder.removeAllViews();
+        points.clear();
+        greeter.setVisibility(showGreeter ? VISIBLE : GONE);
     }
 
     static private class SickPersonDaoGetByName extends AsyncTask<String, Void, SickPerson> {

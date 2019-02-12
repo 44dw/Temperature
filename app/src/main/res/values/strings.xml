@@ -103,6 +103,7 @@
         <item>-1</item>
     </string-array>
     <string name="pref_lines_default">15</string>
+    <string name="history_disclaimer">Вывести на главный экран</string>
 
     <string-array name="pref_entries_open">
         <item>Пустой экран</item>

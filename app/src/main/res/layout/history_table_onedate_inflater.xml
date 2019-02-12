@@ -1,34 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/historyVertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/historyTableDateHolder"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/historyConstraint"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="1"
         android:background="@color/dateBlue"
-        android:onClick="onClickListener"
-        android:paddingBottom="10dp"
-        android:paddingTop="10dp"
-        android:text=""
-        android:textAlignment="center"
-        android:textStyle="bold" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/view2">
+
+        <TextView
+            android:id="@+id/historyTableDateHolder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:onClick="onClickListener"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:text=""
+            android:textAlignment="center"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/historyShowOnMain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
 
     <View
+        android:id="@+id/view2"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:background="@color/dateBlueDark"/>
+        android:background="@color/dateBlueDark"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TableLayout
         android:id="@+id/historyTable"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/historyConstraint">
 
         <TableRow
             android:id="@+id/historyTableRow"
@@ -75,14 +105,14 @@
             <TextView
                 android:id="@+id/historyNoteDescr"
                 android:layout_width="15dp"
-                android:minWidth="15dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@color/zukkini"
                 android:gravity="center_horizontal"
+                android:minWidth="15dp"
                 android:text="" />
         </TableRow>
 
     </TableLayout>
 
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>
