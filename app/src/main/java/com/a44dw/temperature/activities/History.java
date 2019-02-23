@@ -34,30 +34,51 @@ public class History extends AppCompatActivity
         TableHistoryFragment.OnHistoryTableActionListener,
         View.OnClickListener {
 
-    AppDatabase database;
-    FragmentTransaction transaction;
-    //Выбранное имя, будет использоваться в TableHistoryFragment
-    public static SickPerson chosenName;
-    ArrayList<String> selectedDates;
-    LinearLayout nameToDel;
-    boolean changedPerson;
-    ActionBar bar;
-
-    TableHistoryFragment tableHistoryFragment;
-
     public static final String EXTRA_CHANGE = "change";
     public static final String EXTRA_SHOW_ON_MAIN = "showOnMain";
     public static final String EXTRA_CHOSEN_NAME = "name";
+    private static final String TAG_DEL_DIALOG = "delDialog";
+
+    private AppDatabase database;
+    private FragmentTransaction transaction;
+    private LinearLayout layoutToDel;
+    private SickPerson chosenPerson;
+    private boolean changedPerson = false;
+    private ActionBar bar;
 
     private TextView showPointsOnMain;
     private int selectBoxesCheckedCounter = 0;
-    private static DisplayMetrics metrics;
+    private static DisplayMetrics metrics = new DisplayMetrics();
+
+    TableHistoryFragment tableHistoryFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+
         database = App.getInstance().getDatabase();
+
+        prepareActionBar();
+        initUI();
+
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        showNamesFragment();
+    }
+
+    private void initUI() {
+        showPointsOnMain = findViewById(R.id.historyShowOnMainScreen);
+        showPointsOnMain.setOnClickListener(this);
+    }
+
+    private void showNamesFragment() {
+        transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.fragmentHolder, new SickNamesHistoryFragment());
+        transaction.commit();
+    }
+
+    private void prepareActionBar() {
         //редактируем ActionBar:
         bar = getSupportActionBar();
         if(bar != null) {
@@ -67,18 +88,6 @@ public class History extends AppCompatActivity
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setDisplayShowHomeEnabled(true);
         }
-        metrics = new DisplayMetrics();
-        changedPerson = false;
-
-        tableHistoryFragment = new TableHistoryFragment();
-
-        showPointsOnMain = findViewById(R.id.historyShowOnMainScreen);
-        showPointsOnMain.setOnClickListener(this);
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        selectedDates = new ArrayList<>();
-        transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.fragmentHolder, new SickNamesHistoryFragment());
-        transaction.commit();
     }
 
     //При нажатии на кнопку "Назад"
@@ -96,28 +105,19 @@ public class History extends AppCompatActivity
             //При нажатии на имя...
             case(R.id.sickName): {
                 TextView nameHolder = (TextView) view;
-                //Заполняем переменную выбранного имени для TableHistoryFragment
-                chosenName = (SickPerson) nameHolder.getTag();
-                //прячем дескриптор и поля с прочими именами
-                transaction = getSupportFragmentManager().beginTransaction();
-                tableHistoryFragment.setSelectedDatesArray(selectedDates);
-                tableHistoryFragment.setHistoryTableActionListener(this);
-                transaction.replace(R.id.fragmentHolder, tableHistoryFragment);
-                transaction.commit();
-                if((bar != null)&&(chosenName != null))bar.setTitle(chosenName.getName());
+                chosenPerson = (SickPerson) ((LinearLayout)nameHolder.getParent().getParent()).getTag();
+
+                showHistoryFragment();
+
+                if(bar != null) bar.setTitle(chosenPerson.getName());
                 showPointsOnMain.setVisibility(View.VISIBLE);
                 break;
             }
             //при нажатии на крестик рядом с именем
             case(R.id.sickNameDel): {
                 //"запоминаем" имя, к-е будем удалять)
-                nameToDel = (LinearLayout) view.getParent().getParent();
-                //Создаём диалог и прикладываем к нему ссылку на текст, к-й нужно показать
-                DialogFragment dialog = new DelDialog();
-                Bundle args = new Bundle();
-                args.putInt("textToShow", R.string.deldialog_shure_del_name);
-                dialog.setArguments(args);
-                dialog.show(getSupportFragmentManager(), "DelDialog");
+                layoutToDel = (LinearLayout)view.getParent().getParent();
+                showDelDialog();
                 break;
             }
             //При нажатии на строку с датой...
@@ -130,11 +130,9 @@ public class History extends AppCompatActivity
                 //включаем/выключаем таблицу
                 if(table.getVisibility() == View.GONE) {
                     table.setVisibility(View.VISIBLE);
-                    //view.setBackgroundColor(getResources().getColor(R.color.dateBlueDark));
                     subHolder.setBackgroundColor(getResources().getColor(R.color.dateBlueDark));
                 } else {
                     table.setVisibility(View.GONE);
-                    //view.setBackgroundColor(getResources().getColor(R.color.dateBlue));
                     subHolder.setBackgroundColor(getResources().getColor(R.color.dateBlue));
                 }
                 break;
@@ -161,14 +159,36 @@ public class History extends AppCompatActivity
             }
         }
     }
+
+    private void showDelDialog() {
+        //Создаём диалог и прикладываем к нему ссылку на текст, к-й нужно показать
+        DialogFragment dialog = new DelDialog();
+        Bundle args = new Bundle();
+        args.putInt(DelDialog.TEXT_TO_SHOW, R.string.deldialog_shure_del_name);
+        dialog.setArguments(args);
+        dialog.show(getSupportFragmentManager(), TAG_DEL_DIALOG);
+    }
+
+    private void showHistoryFragment() {
+        tableHistoryFragment = new TableHistoryFragment();
+        tableHistoryFragment.setHistoryTableActionListener(this);
+        transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentHolder, tableHistoryFragment);
+        transaction.commit();
+    }
+
     //Если пользователь кликнул в диалоге удаления больного на "ОК"...
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
+        deleteSickPerson();
+    }
+
+    private void deleteSickPerson() {
         //если удаляемый больной = текущий выбранный, удаляем выбранного
-        final String name = nameToDel.getTag().toString();
+        final SickPerson personToDel = (SickPerson) layoutToDel.getTag();
         SickPerson nowPerson = App.getInstance().getPerson();
         if(nowPerson != null) {
-            if (name.equals(nowPerson.name)) {
+            if (personToDel.equals(nowPerson)) {
                 App.getInstance().delPerson();
                 changedPerson = true;
             }
@@ -177,12 +197,12 @@ public class History extends AppCompatActivity
         new Thread(new Runnable() {
             @Override
             public void run() {
-                database.sickPersonDao().deleteByName(name);
+                database.sickPersonDao().deleteByName(personToDel.getName());
             }
         }).start();
         //удаляем строку с именем
-        LinearLayout parentHolder = (LinearLayout) nameToDel.getParent();
-        parentHolder.removeView(nameToDel);
+        LinearLayout parentHolder = (LinearLayout) layoutToDel.getParent();
+        parentHolder.removeView(layoutToDel);
     }
 
     //должно вызываться при смене ориентации устройства.
@@ -222,6 +242,11 @@ public class History extends AppCompatActivity
     }
 
     @Override
+    public SickPerson getChosenPerson() {
+        return chosenPerson;
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.historyShowOnMainScreen: {
@@ -229,7 +254,7 @@ public class History extends AppCompatActivity
                 ArrayList<Point> pointsToShow = (ArrayList<Point>) tableHistoryFragment.getSelectedRecords();
                 Intent intent = new Intent();
                 intent.putExtra(EXTRA_CHANGE, false);
-                intent.putExtra(EXTRA_CHOSEN_NAME, chosenName);
+                intent.putExtra(EXTRA_CHOSEN_NAME, chosenPerson);
                 intent.putExtra(EXTRA_SHOW_ON_MAIN, pointsToShow);
                 setResult(RESULT_OK, intent);
                 finish();

@@ -61,18 +61,26 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/warningLayout">
+        app:layout_constraintTop_toBottomOf="@+id/progressBar">
 
         <LinearLayout
             android:id="@+id/tableHolder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:paddingBottom="10dp" />
+            android:paddingBottom="10dp"
+            android:visibility="gone" />
     </ScrollView>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:paddingTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </android.support.constraint.ConstraintLayout>

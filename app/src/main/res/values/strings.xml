@@ -71,8 +71,9 @@
     <string name="pref_open_default">0</string>
     <string name="prefs_open_title">При смене больного</string>
     <string name="dialog_whatsnew">Что нового</string>
-    <string name="ver101">Версия 1.0.1</string>
+    <string name="ver">Версия 1.0.2</string>
     <string name="ver101body">+ Возможность делать записи \"задним числом\"\n+ Экран настроек\n+ Возможность загрузки последних записей при смене больного\n+ Возможность оставить на экране только последние записи\n+ Колоризация имён больных\n+ Исправлены ошибки и устранены утечки памяти</string>
+    <string name="ver102body">+ Возможность вывести записи из \"истории\" на главный экран для просмотра и дальнейшего редактирования\n+ Рефакторинг кода\n+ Ускорение работы приложения</string>
 
     <string-array name="drugUnits">
         <item>табл.</item>
@@ -104,6 +105,10 @@
     </string-array>
     <string name="pref_lines_default">15</string>
     <string name="history_disclaimer">Вывести на главный экран</string>
+    <string name="emptyDrug">поле \\\"Лекарство\\\" не должно быть пустым!</string>
+    <string name="emptyAmount">поле \\\"Кол-во\\\" не должно быть пустым!</string>
+    <string name="emptySympt">поле \\\"Симптом\\\" не должно быть пустым!</string>
+    <string name="history_loading">История загружается. Это может занять некоторое время</string>
 
     <string-array name="pref_entries_open">
         <item>Пустой экран</item>

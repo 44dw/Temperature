@@ -19,15 +19,16 @@ import com.a44dw.temperature.database.AppDatabase;
 import com.a44dw.temperature.R;
 import com.a44dw.temperature.entities.Symptom;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class AddSympt extends AppCompatActivity {
 
-    public static final String EXTRA_SYMPT = "symptName";
+    public static final String EXTRA_SYMPT = "sympt_name";
     static AppDatabase database;
-    ArrayList<String> symptoms;
+    ArrayList<String> symptoms = new ArrayList<>();
     EditText textField;
     LinearLayout namesHolder;
 
@@ -35,6 +36,22 @@ public class AddSympt extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_sympt);
+
+        prepareActionBar();
+        initUI();
+
+        //запрашиваем в потоке список симптомов и "раскидываем" их в соответствующее поле
+        database = App.getInstance().getDatabase();
+        new SymptDaoGetNames(this).execute();
+    }
+
+    private void initUI() {
+        textField = findViewById(R.id.addSymptField);
+        textField.addTextChangedListener(twatcher);
+        namesHolder = findViewById(R.id.addSymptHintLayout);
+    }
+
+    private void prepareActionBar() {
         //убираем тень и Title...
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
@@ -43,23 +60,6 @@ public class AddSympt extends AppCompatActivity {
             //вешаем стрелку назад
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setDisplayShowHomeEnabled(true);
-        }
-        //запрашиваем в потоке список симптомов и "раскидываем" их в соответствующее поле
-        database = App.getInstance().getDatabase();
-        SymptDaoGetNames symptDaoGetNames = new SymptDaoGetNames();
-        symptDaoGetNames.execute();
-        try {
-            symptoms = symptDaoGetNames.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        textField = findViewById(R.id.addSymptField);
-        textField.addTextChangedListener(twatcher);
-        namesHolder = findViewById(R.id.addSymptHintLayout);
-        for (String symptom : symptoms) {
-            symptNameToHolder(symptom);
         }
     }
 
@@ -71,12 +71,11 @@ public class AddSympt extends AppCompatActivity {
                 break;
             }
             case (R.id.addSymptName): {
-                TextView field = findViewById(R.id.addSymptField);
-                if(field.getText().toString().isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "поле \"Симптом\" не должно быть пустым!", Toast.LENGTH_SHORT).show();
+                if(textField.getText().toString().isEmpty()) {
+                    Toast.makeText(getApplicationContext(), R.string.emptySympt, Toast.LENGTH_SHORT).show();
                     break;
                 }
-                String symptName = field.getText().toString().toLowerCase();
+                String symptName = textField.getText().toString().toLowerCase();
                 //проверяем, содержится ли элемент в базе, если нет, вставляем его туда
                 if(!symptoms.contains(symptName)) {
                     final Symptom symptom = new Symptom();
@@ -98,7 +97,6 @@ public class AddSympt extends AppCompatActivity {
         }
     }
 
-    //код дублируется в addDrug. Сделать статическим?
     public void symptNameToHolder(String sympt) {
         LinearLayout line = (LinearLayout) getLayoutInflater()
                 .inflate(R.layout.add_drug_sympt_line_inflater, namesHolder, false);
@@ -134,9 +132,25 @@ public class AddSympt extends AppCompatActivity {
     }
 
     static private class SymptDaoGetNames extends AsyncTask<Void, Void, ArrayList<String>> {
+
+        WeakReference<AddSympt> wrActivity;
+
+        public SymptDaoGetNames(AddSympt activity) {
+            this.wrActivity = new WeakReference<>(activity);
+        }
+
         @Override
         protected ArrayList<String> doInBackground(Void... params) {
             return (ArrayList<String>) database.symptomDao().getNames();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> list) {
+            wrActivity.get().symptoms = list;
+
+            for (String symptom : list) {
+                wrActivity.get().symptNameToHolder(symptom);
+            }
         }
     }
 }

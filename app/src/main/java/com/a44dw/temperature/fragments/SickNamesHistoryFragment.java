@@ -17,6 +17,7 @@ import com.a44dw.temperature.R;
 import com.a44dw.temperature.activities.History;
 import com.a44dw.temperature.entities.SickPerson;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -46,27 +47,21 @@ public class SickNamesHistoryFragment extends Fragment {
         //получаем ссылку на текущую Activity
         history = (History) getActivity();
         //получаем список имён и "раскидываем" его в поле
-        SickPersonDaoGetNames sickPersonDaoGetNames = new SickPersonDaoGetNames();
-        sickPersonDaoGetNames.execute();
-        Random random = new Random();
-        try {
-            ArrayList<SickPerson> persons = sickPersonDaoGetNames.get();
-            for(SickPerson person : persons) {
-                LinearLayout line = (LinearLayout) getLayoutInflater()
-                        .inflate(R.layout.history_names_line_inflater, namesHolder, false);
-                line.setBackgroundColor(Color.argb(40, random.nextInt(256), random.nextInt(256), random.nextInt(256)));
-                line.findViewById(R.id.sickName).setTag(person);
-                TextView text = line.findViewById(R.id.sickName);
-                text.setText(person.getName());
-                namesHolder.addView(line);
-            }
-            random = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        new SickPersonDaoGetNames(this).execute();
         return view;
+    }
+
+    private void fillHolderByNames(ArrayList<SickPerson> persons) {
+        Random random = new Random();
+        for(SickPerson person : persons) {
+            LinearLayout line = (LinearLayout) getLayoutInflater()
+                    .inflate(R.layout.history_names_line_inflater, namesHolder, false);
+            line.setBackgroundColor(Color.argb(40, random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+            line.setTag(person);
+            TextView text = line.findViewById(R.id.sickName);
+            text.setText(person.getName());
+            namesHolder.addView(line);
+        }
     }
 
     @Override
@@ -77,9 +72,21 @@ public class SickNamesHistoryFragment extends Fragment {
     }
 
     static private class SickPersonDaoGetNames extends AsyncTask<Void, Void, ArrayList<SickPerson>> {
+
+        WeakReference<SickNamesHistoryFragment> wrFragment;
+
+        public SickPersonDaoGetNames(SickNamesHistoryFragment fragment) {
+            wrFragment = new WeakReference<>(fragment);
+        }
+
         @Override
         protected ArrayList<SickPerson> doInBackground(Void... params) {
             return (ArrayList<SickPerson>)database.sickPersonDao().getAll();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<SickPerson> sickPeople) {
+            wrFragment.get().fillHolderByNames(sickPeople);
         }
     }
 }

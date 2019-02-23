@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.a44dw.temperature.App;
 import com.a44dw.temperature.database.AppDatabase;
 import com.a44dw.temperature.MainActivity;
+import com.a44dw.temperature.entities.SickPerson;
 import com.a44dw.temperature.pojo.PersonDateNote;
 import com.a44dw.temperature.pojo.PersonDrugHistory;
 import com.a44dw.temperature.pojo.PersonSymptHistory;
@@ -28,32 +29,32 @@ import com.a44dw.temperature.entities.Temperature;
 import com.a44dw.temperature.activities.History;
 import com.a44dw.temperature.pojo.Point;
 
+import java.lang.ref.WeakReference;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
 public class TableHistoryFragment extends Fragment {
 
+    private static final String TAG_NOTE = "note";
     private OnHistoryTableActionListener listener;
     private Map<String, List<Point>> pointMap;
     private ArrayList<CheckBox> boxesList;
     public ConstraintLayout view;
     static AppDatabase database;
-    ArrayList<String> selectedDates;
-    LinearLayout holder;
+    private LinearLayout holder;
 
     public TableHistoryFragment() {}
-
-    //TODO выяснить, для чего это
-    public void setSelectedDatesArray(ArrayList<String> selectedDates) {
-        this.selectedDates = selectedDates;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,8 +68,9 @@ public class TableHistoryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = (ConstraintLayout) inflater.inflate(R.layout.fragment_history, container, false);
+        holder = view.findViewById(R.id.tableHolder);
         //Рисуем таблицу
-        drawTable(History.chosenName.getName());
+        drawTable(listener.getChosenPerson());
         return view;
     }
 
@@ -88,71 +90,148 @@ public class TableHistoryFragment extends Fragment {
         return result;
     }
 
-    public void drawTable(String name) {
-        SickPersonDaoGetByName sickPersonDaoGetByName = new SickPersonDaoGetByName();
-        sickPersonDaoGetByName.execute(name);
-        try {
-            long personId = sickPersonDaoGetByName.get();
-            //получаем список дат, когда болел Person
-            TemperatureDaoGetUnicDatesWithPerson getUnicDatesWithPerson
-                    = new TemperatureDaoGetUnicDatesWithPerson();
-            getUnicDatesWithPerson.execute(personId);
+    public void drawTable(SickPerson person) {
+        new GetPointsFromDB(this).execute(person.getSickId());
+    }
 
-            ArrayList<String> dates = getUnicDatesWithPerson.get();
+    private void fillTable(HashMap<String, List<Point>> pointMap) {
+        this.pointMap = pointMap;
+        ArrayList<String> datesList = new ArrayList<>(pointMap.keySet());
+        Collections.sort(datesList, new Comparator<String>() {
+            DateFormat f = new SimpleDateFormat("dd.MM.yy", Locale.getDefault());
+            @Override
+            public int compare(String o1, String o2) {
+                try {
+                    return f.parse(o1).compareTo(f.parse(o2));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                return 0;
+            }
+        });
 
-            Collections.sort(dates, new Comparator<String>() {
+        for(String date : datesList) {
+            ArrayList<Point> datePointsList = (ArrayList<Point>) pointMap.get(date);
+
+            //для каждой даты создаём таблицу
+            ConstraintLayout oneDateHistory = (ConstraintLayout) getLayoutInflater()
+                    .inflate(R.layout.history_table_onedate_inflater, holder, false);
+            TableLayout table = oneDateHistory.findViewById(R.id.historyTable);
+            table.setVisibility(View.GONE);
+            TextView dateHolder = oneDateHistory.findViewById(R.id.historyTableDateHolder);
+            dateHolder.setText(date);
+            CheckBox checkBox = oneDateHistory.findViewById(R.id.historyShowOnMain);
+            boxesList.add(checkBox);
+            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public int compare(String o1, String o2) {
-                    try {
-                        return MainActivity.dateFormat.parse(o1).compareTo(MainActivity.dateFormat.parse(o2));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        return 0;
-                    }
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    listener.onDateSelectCheckedChanged(isChecked);
                 }
             });
 
-            holder = view.findViewById(R.id.tableHolder);
+            for(Point p : datePointsList) {
+                drawRow(p, table);
+            }
 
-            for(String date : dates) {
-                List<Point> datePoints = new ArrayList();
+            holder.addView(oneDateHistory);
+        }
 
-                //и для каждой создаём таблицу
-                ConstraintLayout oneDateHistory = (ConstraintLayout) getLayoutInflater()
-                        .inflate(R.layout.history_table_onedate_inflater, holder, false);
-                TableLayout table = oneDateHistory.findViewById(R.id.historyTable);
-                table.setVisibility(View.GONE);
-                TextView dateHolder = oneDateHistory.findViewById(R.id.historyTableDateHolder);
-                dateHolder.setText(date);
+        //делаем видимым последнюю таблицу
+        if(holder.getChildCount() > 0) {
+            ConstraintLayout lastDateHistory = (ConstraintLayout) holder.getChildAt(holder.getChildCount() - 1);
+            ConstraintLayout subHolder = lastDateHistory.findViewById(R.id.historyConstraint);
+            TableLayout lastTable = lastDateHistory.findViewById(R.id.historyTable);
+            lastTable.setVisibility(View.VISIBLE);
+            subHolder.setBackgroundColor(getResources().getColor(R.color.dateBlueDark));
+        }
 
-                //готовим лист аргументов для передачи в запросы к БД
-                ArrayList<String> args = new ArrayList<>();
-                args.add(String.valueOf(personId));
-                args.add(date);
+        //проверяем, в допустимых ли значениях ширина экрана
+        DisplayMetrics metrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        ConstraintLayout warning = view.findViewById(R.id.warningLayout);
+        if(metrics.widthPixels < 700) {
+            warning.setVisibility(View.VISIBLE);
+            //holder.setVisibility(View.GONE);
+            listener.onNeedToChangeOrientation(true);
+        } else listener.onNeedToChangeOrientation(false);
 
-                //Получаем список лекарств, к-е принимал человек в эту дату
-                GetPersonDrugHistory getPersonDrugHistory = new GetPersonDrugHistory();
-                getPersonDrugHistory.execute(args);
+        //Показываем таблицу и прячем прогрессбар
+        holder.setVisibility(View.VISIBLE);
+        view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+    }
 
-                //Получаем список симптомов, к-е были у человека в эту дату
-                GetPersonSymptHistory getPersonSymptHistory = new GetPersonSymptHistory();
-                getPersonSymptHistory.execute(args);
+    private void drawRow(Point p, TableLayout table) {
+        TableRow row = (TableRow) getLayoutInflater().inflate(R.layout.history_table_row_inflater, table, false);
+        TextView timeField = row.findViewById(R.id.historyTime);
+        TextView tempField = row.findViewById(R.id.historyTemp);
+        TextView symptField = row.findViewById(R.id.historySympt);
+        TextView drugField = row.findViewById(R.id.historyDrug);
+        ImageView noteField = row.findViewById(R.id.historyNote);
+        TableRow noteRow = null;
 
-                //Получаем список заметок за текущую дату и человека
-                GetNotesWithPersonAndDate getNotesWithPersonAndDate = new GetNotesWithPersonAndDate();
-                getNotesWithPersonAndDate.execute(args);
+        timeField.setText(p.getTime());
+        if(p.getTemperature() > 0) tempField.setText(String.valueOf(p.getTemperature()));
 
-                //получаем список температур по человеку и дате
-                GetAllWithPersonAndDate getAllWithPersonAndDate = new GetAllWithPersonAndDate();
-                getAllWithPersonAndDate.execute(args);
+        for(String[] drug : p.getDrugArray()) {
+            String text;
+            if(drugField.getText().toString().length() > 0) {
+                text = drugField.getText().toString() + "\n"
+                        + drug[0] + " " + drug[1] + " " + drug[2];
+            } else {
+                text = drug[0] + " " + drug[1] + " " + drug[2];
+            }
+            drugField.setText(text);
+        }
 
-                //получаем все листы в переменные
-                ArrayList<PersonDrugHistory> personDrugHistory = getPersonDrugHistory.get();
-                ArrayList<PersonSymptHistory> personSymptHistory = getPersonSymptHistory.get();
-                ArrayList<PersonDateNote> noteHistory = getNotesWithPersonAndDate.get();
-                ArrayList<Temperature> temperatures = getAllWithPersonAndDate.get();
+        for(String sympt : p.getSymptArray()) {
+            if(symptField.getText().toString().length() > 0) {
+                String text = symptField.getText().toString() + "\n" + sympt;
+                symptField.setText(text);
+            } else symptField.setText(sympt);
+        }
 
-                Collections.sort(temperatures, new Comparator<Temperature>() {
+        if(p.getNote().length() > 0) {
+            //добавляем ImageView картинку
+            noteField.setImageResource(R.drawable.ic_writing_on);
+            //добавляем тэг, чтобы onClickListener мог определить сегмент с заметкой
+            noteField.setTag(TAG_NOTE);
+            //надуваем ряд для заметки
+            noteRow = (TableRow)getLayoutInflater()
+                    .inflate(R.layout.history_table_note_inflater, table, false);
+            TextView note = noteRow.findViewById(R.id.historyNoteShow);
+            note.setText(p.getNote());
+        }
+
+        table.addView(row);
+        //добавляем ряд с заметкой и делаем его невидимым
+        if(noteRow != null) {
+            table.addView(noteRow);
+            noteRow.setVisibility(View.GONE);
+        }
+    }
+
+    static public class GetPointsFromDB extends AsyncTask<Long, Void, HashMap<String, List<Point>>> {
+
+        WeakReference<TableHistoryFragment> wrFragment;
+
+        public GetPointsFromDB(TableHistoryFragment fragment) {
+            this.wrFragment = new WeakReference<>(fragment);
+        }
+
+        @Override
+        protected HashMap<String, List<Point>> doInBackground(Long... id) {
+            HashMap<String, List<Point>> pointMap = new HashMap<>();
+            ArrayList<String> datesList = (ArrayList<String>) database.temperatureDao().getUnicDatesWithPerson(id[0]);
+
+            for (String date : datesList) {
+                List<Point> datePoints = new ArrayList<>();
+
+                ArrayList<PersonDrugHistory> personDrugHistoryList = (ArrayList<PersonDrugHistory>) database.sickPersonDao().getPersonDrugHistory(id[0], date);
+                ArrayList<PersonSymptHistory> personSymptHistoryList = (ArrayList<PersonSymptHistory>) database.sickPersonDao().getPersonSymptHistory(id[0], date);
+                ArrayList<PersonDateNote> personDateNoteList = (ArrayList<PersonDateNote>) database.temperatureDao().getNotesWithPersonAndDate(id[0], date);
+                ArrayList<Temperature> temperatureList = (ArrayList<Temperature>) database.temperatureDao().getAllWithPersonAndDate(id[0], date);
+
+                Collections.sort(temperatureList, new Comparator<Temperature>() {
                     @Override
                     public int compare(Temperature o1, Temperature o2) {
                         try {
@@ -164,166 +243,70 @@ public class TableHistoryFragment extends Fragment {
                     }
                 });
 
-                CheckBox checkBox = oneDateHistory.findViewById(R.id.historyShowOnMain);
-                boxesList.add(checkBox);
-                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        listener.onDateSelectCheckedChanged(isChecked);
-                    }
-                });
-
-                for(Temperature t : temperatures) {
+                for(Temperature t : temperatureList) {
                     Point point = new Point(t.getTime(), t.getDate(), t.getTemperature(), t.getTempId());
-                    ArrayList<String[]> drugArray = new ArrayList<>();
-                    ArrayList<String> symptArray = new ArrayList<>();
-                    String pointNote = "";
 
-                    TableRow row = (TableRow) getLayoutInflater().inflate(R.layout.history_table_row_inflater, table, false);
-                    TextView timeField = row.findViewById(R.id.historyTime);
-                    TextView tempField = row.findViewById(R.id.historyTemp);
-                    TextView symptField = row.findViewById(R.id.historySympt);
-                    TextView drugField = row.findViewById(R.id.historyDrug);
-                    ImageView noteField = row.findViewById(R.id.historyNote);
-                    TableRow noteRow = null;
-                    timeField.setText(t.time);
-                    if(t.temperature > 0) tempField.setText(String.valueOf(t.temperature));
+                    point.setDrugArray(fillDrugList(personDrugHistoryList, t.getTempId()));
+                    point.setSymptArray(fillSymptList(personSymptHistoryList, t.getTempId()));
+                    point.setNote(getNote(personDateNoteList, t.getTempId()));
 
-                    for(int i=0; i<personDrugHistory.size(); i++) {
-                        PersonDrugHistory pdh = personDrugHistory.get(i);
-                        if(pdh.temperatureId == t.tempId) {
-                            drugArray.add(new String[]{pdh.getName(), String.valueOf(pdh.getAmount()), pdh.getDrugUnit()});
-                            if(drugField.getText().toString().length() > 0) {
-                                String text = drugField.getText().toString() + "\n"
-                                        + pdh.name + " " + pdh.amount + " " + pdh.drugUnit;
-                                drugField.setText(text);
-                            } else {
-                                String text = pdh.name + " " + pdh.amount + " " + pdh.drugUnit;
-                                drugField.setText(text);
-                            }
-                            personDrugHistory.remove(i);
-                            i--;
-                        }
-                    }
-
-                    for(int i=0; i<personSymptHistory.size(); i++) {
-                        PersonSymptHistory psh = personSymptHistory.get(i);
-                        if(psh.temperatureId == t.tempId) {
-                            symptArray.add(psh.getName());
-                            if(symptField.getText().toString().length() > 0) {
-                                String text = symptField.getText().toString() + "\n" + psh.name;
-                                symptField.setText(text);
-                            } else symptField.setText(psh.name);
-                            personSymptHistory.remove(i);
-                            i--;
-                        }
-                    }
-
-                    for(int i=0; i<noteHistory.size(); i++) {
-                        PersonDateNote pdn = noteHistory.get(i);
-                        if((pdn.tempId == t.tempId)&&(pdn.note.length() > 0)) {
-                            //добавляем ImageView картинку
-                            noteField.setImageResource(R.drawable.ic_writing_on);
-                            //добавляем тэг, чтобы onClickListener мог определить сегмент с заметкой
-                            noteField.setTag("note");
-                            //надуваем ряд для заметки
-                            noteRow = (TableRow)getLayoutInflater()
-                                    .inflate(R.layout.history_table_note_inflater, table, false);
-                            TextView note = noteRow.findViewById(R.id.historyNoteShow);
-                            note.setText(pdn.getNote());
-                            pointNote = pdn.getNote();
-                        }
-                    }
-                    //формируем Point и добавляем его в лист
-                    point.setDrugArray(drugArray);
-                    point.setSymptArray(symptArray);
-                    point.setNote(pointNote);
                     datePoints.add(point);
-
-                    table.addView(row);
-                    //добавляем ряд с заметкой и делаем его невидимым
-                    if(noteRow != null) {
-                        table.addView(noteRow);
-                        noteRow.setVisibility(View.GONE);
-                    }
                 }
-                holder.addView(oneDateHistory);
-                //добавляем points list в map
+
                 pointMap.put(date, datePoints);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+            return pointMap;
         }
-        //делаем видимым последнюю таблицу
-        if(holder.getChildCount() > 0) {
-            ConstraintLayout lastDateHistory = (ConstraintLayout) holder.getChildAt(holder.getChildCount() - 1);
-            ConstraintLayout subHolder = lastDateHistory.findViewById(R.id.historyConstraint);
-            //TextView date = lastDateHistory.findViewById(R.id.historyTableDateHolder);
-            TableLayout lastTable = lastDateHistory.findViewById(R.id.historyTable);
-            lastTable.setVisibility(View.VISIBLE);
-            subHolder.setBackgroundColor(getResources().getColor(R.color.dateBlueDark));
-        }
-        //проверяем, в допустимых ли значениях ширина экрана
-        DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        ConstraintLayout warning = view.findViewById(R.id.warningLayout);
-        if(metrics.widthPixels < 700) {
-            warning.setVisibility(View.VISIBLE);
-            holder.setVisibility(View.GONE);
-            listener.onNeedToChangeOrientation(true);
-        } else listener.onNeedToChangeOrientation(false);
-    }
 
-    //получаем id больного
-    static public class SickPersonDaoGetByName extends AsyncTask<String, Void, Long> {
         @Override
-        protected Long doInBackground(String... name) {
-            return database.sickPersonDao().getByName(name[0]).sickId;
+        protected void onPostExecute(HashMap<String, List<Point>> pointMap) {
+            wrFragment.get().fillTable(pointMap);
+        }
+
+        private String getNote(ArrayList<PersonDateNote> personDateNoteList, long tempId) {
+
+            for(int i=0; i<personDateNoteList.size(); i++) {
+                PersonDateNote pdn = personDateNoteList.get(i);
+                if((pdn.tempId == tempId)&&(pdn.note.length() > 0)) {
+                    return pdn.getNote();
+                }
+            }
+            return "";
+        }
+
+        private ArrayList<String> fillSymptList(ArrayList<PersonSymptHistory> personSymptHistoryList, long tempId) {
+            ArrayList<String> symptArray = new ArrayList<>();
+
+            for(int i=0; i<personSymptHistoryList.size(); i++) {
+                PersonSymptHistory psh = personSymptHistoryList.get(i);
+                if(psh.temperatureId == tempId) {
+                    symptArray.add(psh.getName());
+                    personSymptHistoryList.remove(i);
+                    i--;
+                }
+            }
+
+            return symptArray;
+        }
+
+        private ArrayList<String[]> fillDrugList(ArrayList<PersonDrugHistory> personDrugHistoryList, long tempId) {
+            ArrayList<String[]> drugArray = new ArrayList<>();
+
+            for(int i=0; i<personDrugHistoryList.size(); i++) {
+                PersonDrugHistory pdh = personDrugHistoryList.get(i);
+                if(pdh.temperatureId == tempId) {
+                    drugArray.add(new String[]{pdh.getName(), String.valueOf(pdh.getAmount()), pdh.getDrugUnit()});
+                    personDrugHistoryList.remove(i);
+                    i--;
+                }
+            }
+            return drugArray;
         }
     }
 
-    //получаем список дат, когда болел Person
-    static private class TemperatureDaoGetUnicDatesWithPerson extends AsyncTask<Long, Void, ArrayList<String>> {
-        @Override
-        protected ArrayList<String> doInBackground(Long... id) {
-            return (ArrayList<String>) database.temperatureDao().getUnicDatesWithPerson(id[0]);
-        }
-    }
-
-    //Получаем список лекарств, к-е принимал человек в эту дату
-    static private class GetPersonDrugHistory extends AsyncTask<ArrayList, Void, ArrayList<PersonDrugHistory>> {
-        protected ArrayList<PersonDrugHistory> doInBackground(ArrayList... args) {
-            return (ArrayList<PersonDrugHistory>) database.sickPersonDao()
-                    .getPersonDrugHistory(Long.parseLong((String) args[0].get(0)), (String) args[0].get(1));
-        }
-    }
-
-    //Получаем список симптомов, к-е были у человека в эту дату
-    static private class GetPersonSymptHistory extends AsyncTask<ArrayList, Void, ArrayList<PersonSymptHistory>> {
-        protected ArrayList<PersonSymptHistory> doInBackground(ArrayList... args) {
-            return (ArrayList<PersonSymptHistory>) database.sickPersonDao()
-                    .getPersonSymptHistory(Long.parseLong((String) args[0].get(0)), (String) args[0].get(1));
-        }
-    }
-
-    //Получаем список заметок за текущую дату и человека
-    static private class GetNotesWithPersonAndDate extends AsyncTask<ArrayList, Void, ArrayList<PersonDateNote>> {
-        protected ArrayList<PersonDateNote> doInBackground(ArrayList... args) {
-            return (ArrayList<PersonDateNote>) database.temperatureDao().getNotesWithPersonAndDate(Long.parseLong((String) args[0].get(0)), (String) args[0].get(1));
-        }
-    }
-
-    //получаем список температур по человеку и дате
-    static private class GetAllWithPersonAndDate extends AsyncTask<ArrayList, Void, ArrayList<Temperature>> {
-        protected ArrayList<Temperature> doInBackground(ArrayList... args) {
-            return (ArrayList<Temperature>) database.temperatureDao()
-                    .getAllWithPersonAndDate(Long.parseLong((String) args[0].get(0)), (String) args[0].get(1));
-        }
-    }
     public interface OnHistoryTableActionListener {
         void onDateSelectCheckedChanged(boolean checked);
         void onNeedToChangeOrientation(boolean isNeed);
+        SickPerson getChosenPerson();
     }
 }

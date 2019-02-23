@@ -20,7 +20,9 @@ import android.widget.Toast;
 import com.a44dw.temperature.App;
 import com.a44dw.temperature.R;
 import com.a44dw.temperature.database.AppDatabase;
+import com.a44dw.temperature.entities.SickPerson;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -33,7 +35,7 @@ public class PickSickDialog extends DialogFragment {
     LinearLayout holder;
     PickSickDialogListener pListener;
     static AppDatabase database;
-    List<String> personList;
+    List<SickPerson> personList;
 
     public PickSickDialog() {}
 
@@ -46,41 +48,14 @@ public class PickSickDialog extends DialogFragment {
         holder = addHolder();
         //получаем представление БД и список персон
         if(database == null) database = App.getInstance().getDatabase();
-        SickPersonDaoGetNames sickPersonDaoGetNames = new SickPersonDaoGetNames();
-        sickPersonDaoGetNames.execute();
-        Random random = new Random();
-        try {
-            personList = sickPersonDaoGetNames.get();
-            //создаём TextView и заполняем их именами из списка
-            for(final String name : personList) {
-                LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_sick_name, holder, false);
-                layout.setBackgroundColor(Color.argb(40, random.nextInt(256), random.nextInt(256), random.nextInt(256)));
-                TextView sickName = layout.findViewById(R.id.sickName);
-                sickName.setText(name);
-                //Делаем его кликабельным и при нажатии вызываем тот же метод, что и при нажатии на кнопку ОК
-                sickName.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        pListener.onDialogPositiveClick(PickSickDialog.this, name, false);
-                        dismiss();
-                    }
-                });
-                //аппендим TextView к holder
-                holder.addView(layout, 1);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        random = null;
+        new SickPersonDaoGetNames(this).execute();
         builder.setView(holder);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {}
         });
-            builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {}
         });
@@ -105,7 +80,7 @@ public class PickSickDialog extends DialogFragment {
                         Toast.makeText(getContext(), "больной с таким именем уже существует!", Toast.LENGTH_SHORT).show();
                     } else {
                         pListener.onDialogPositiveClick(PickSickDialog.this,
-                                name.getText().toString(), true);
+                                new SickPerson(name.getText().toString()));
                         d.dismiss();
                     }
                 }
@@ -123,6 +98,28 @@ public class PickSickDialog extends DialogFragment {
         }
     }
 
+    private void fillSickPersonHolder(List<SickPerson> sickPeople) {
+        this.personList = sickPeople;
+        Random random = new Random();
+        //создаём TextView и заполняем их именами из списка
+        for(final SickPerson person : personList) {
+            LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_sick_name, holder, false);
+            layout.setBackgroundColor(Color.argb(40, random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+            TextView sickName = layout.findViewById(R.id.sickName);
+            sickName.setText(person.getName());
+            //Делаем его кликабельным и при нажатии вызываем тот же метод, что и при нажатии на кнопку ОК
+            sickName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    pListener.onDialogPositiveClick(PickSickDialog.this, person);
+                    dismiss();
+                }
+            });
+            //аппендим TextView к holder
+            holder.addView(layout, 1);
+        }
+    }
+
     private LinearLayout addHolder() {
         LinearLayout holder = (LinearLayout)inflater.inflate(R.layout.dialog_choose_sick, null);
         //после "надувания" интерфейса, запоминаем поле EditText, чтобы затем считать из него данные
@@ -131,7 +128,7 @@ public class PickSickDialog extends DialogFragment {
     }
 
     public interface PickSickDialogListener {
-        void onDialogPositiveClick(DialogFragment dialog, String name, Boolean newName);
+        void onDialogPositiveClick(DialogFragment dialog, SickPerson person);
     }
 
     @Override
@@ -139,10 +136,23 @@ public class PickSickDialog extends DialogFragment {
         super.onAttach(context);
         pListener = (PickSickDialog.PickSickDialogListener)getActivity();
     }
-    static private class SickPersonDaoGetNames extends AsyncTask<Void, Void, List<String>> {
+
+    static private class SickPersonDaoGetNames extends AsyncTask<Void, Void, List<SickPerson>> {
+
+        private WeakReference<DialogFragment> wrDialogFragment;
+
+        public SickPersonDaoGetNames(DialogFragment dialogFragment) {
+            wrDialogFragment = new WeakReference<>(dialogFragment);
+        }
+
         @Override
-        protected List<String> doInBackground(Void... voids) {
-            return database.sickPersonDao().getNames();
+        protected List<SickPerson> doInBackground(Void... voids) {
+            return database.sickPersonDao().getAll();
+        }
+
+        @Override
+        protected void onPostExecute(List<SickPerson> sickPeople) {
+            ((PickSickDialog) wrDialogFragment.get()).fillSickPersonHolder(sickPeople);
         }
     }
 }

@@ -13,11 +13,12 @@ import com.a44dw.temperature.R;
 public class DelDialog extends DialogFragment {
 
     DelDialogListener dListener;
+    public static final String TEXT_TO_SHOW = "textToShow";
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        int textToShow = getArguments().getInt("textToShow");
+        int textToShow = getArguments().getInt(TEXT_TO_SHOW);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.deldialog_title)
                 .setMessage(textToShow)
