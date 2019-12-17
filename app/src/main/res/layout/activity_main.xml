@@ -106,7 +106,6 @@
         android:layout_margin="16dp"
         android:clickable="true"
         android:focusable="true"
-        android:onClick="onClickListener"
         app:backgroundTint="@android:color/holo_orange_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

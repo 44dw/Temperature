@@ -108,7 +108,6 @@
     <string name="emptyDrug">поле \\\"Лекарство\\\" не должно быть пустым!</string>
     <string name="emptyAmount">поле \\\"Кол-во\\\" не должно быть пустым!</string>
     <string name="emptySympt">поле \\\"Симптом\\\" не должно быть пустым!</string>
-    <string name="history_loading">История загружается. Это может занять некоторое время</string>
 
     <string-array name="pref_entries_open">
         <item>Пустой экран</item>

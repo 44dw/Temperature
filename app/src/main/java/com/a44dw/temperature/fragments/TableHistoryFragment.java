@@ -26,7 +26,6 @@ import com.a44dw.temperature.pojo.PersonDrugHistory;
 import com.a44dw.temperature.pojo.PersonSymptHistory;
 import com.a44dw.temperature.R;
 import com.a44dw.temperature.entities.Temperature;
-import com.a44dw.temperature.activities.History;
 import com.a44dw.temperature.pojo.Point;
 
 import java.lang.ref.WeakReference;
@@ -37,12 +36,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
 
 public class TableHistoryFragment extends Fragment {
 
@@ -145,19 +141,23 @@ public class TableHistoryFragment extends Fragment {
             subHolder.setBackgroundColor(getResources().getColor(R.color.dateBlueDark));
         }
 
+        //прячем прогрессбар
+        view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+
         //проверяем, в допустимых ли значениях ширина экрана
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
         ConstraintLayout warning = view.findViewById(R.id.warningLayout);
         if(metrics.widthPixels < 700) {
             warning.setVisibility(View.VISIBLE);
-            //holder.setVisibility(View.GONE);
-            listener.onNeedToChangeOrientation(true);
-        } else listener.onNeedToChangeOrientation(false);
+            holder.setVisibility(View.GONE);
+            listener.onHideShowOnMainButton(true);
+        } else {
+            //Показываем таблицу
+            holder.setVisibility(View.VISIBLE);
+            listener.onHideShowOnMainButton(false);
+        }
 
-        //Показываем таблицу и прячем прогрессбар
-        holder.setVisibility(View.VISIBLE);
-        view.findViewById(R.id.progressBar).setVisibility(View.GONE);
     }
 
     private void drawRow(Point p, TableLayout table) {
@@ -306,7 +306,7 @@ public class TableHistoryFragment extends Fragment {
 
     public interface OnHistoryTableActionListener {
         void onDateSelectCheckedChanged(boolean checked);
-        void onNeedToChangeOrientation(boolean isNeed);
+        void onHideShowOnMainButton(boolean isNeed);
         SickPerson getChosenPerson();
     }
 }

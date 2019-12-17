@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -85,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
     private LinearLayout mainLinesHolder;
     private ConstraintLayout greeter;
     private Menu menu;
+    private boolean loadFromPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,14 +102,12 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
         //получаем ссылку на БД
         database = App.getInstance().getDatabase();
 
-        SharedPreferences preferences = getPreferences(Activity.MODE_PRIVATE);
-        loadSickName(preferences);
         numOfLines = Integer.valueOf(PreferenceManager
                 .getDefaultSharedPreferences(this)
                 .getString(Preferences.NUM_LINES, "15"));
-        loadSavedPoints(preferences);
 
-        if(points.size() == 0) greeter.setVisibility(VISIBLE);
+        loadSickName(getPreferences(Activity.MODE_PRIVATE));
+
         checkIfVersionIsNew();
     }
 
@@ -117,7 +115,8 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
         if(!preferences.contains(SHARED_PREFS_SICKNAME)) return;
         String name = preferences.getString(SHARED_PREFS_SICKNAME, null);
         if(name != null) {
-            new SickPersonDaoGetByName(this).execute(name);
+            loadFromPreferences = true;
+            new LoadSickPersonAndSavedPoints(this).execute(name);
         }
     }
 
@@ -125,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
         //разворачиваем сохранённые точки, только если есть имя пользователя
         if(!preferences.contains(SHARED_PREFS_POINTS)&&(App.getInstance().getPerson() == null)) return;
 
-        greeter.setVisibility(GONE);
         final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy HH:mm", Locale.US);
         Set<String> pointsSet = preferences.getStringSet(SHARED_PREFS_POINTS, null);
         if(pointsSet != null) {
@@ -154,6 +152,8 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
                 ConstraintLayout line = generatorHelper.createPoint(p, true);
                 mainLinesHolder.addView(line);
             }
+            //убираем greeter
+            if(points.size() > 0) greeter.setVisibility(GONE);
             //прокручивает ScrollView вниз
             scrollDown();
         }
@@ -470,7 +470,8 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
     //меняет title и делает видимым пункт меню "сменить больного"
     public void setTitle() {
         //очищаем главный экран и список точек
-        clearMainScreen(true);
+        if(!loadFromPreferences) clearMainScreen(true);
+        else loadFromPreferences = false;
         MenuItem changePerson = menu.findItem(R.id.menu_change);
         if(App.getInstance().getPerson() != null) {
             setTitle(App.getInstance().getPerson().getName() + " болеет :(");
@@ -720,11 +721,11 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
     }
 
 
-    static private class SickPersonDaoGetByName extends AsyncTask<String, Void, SickPerson> {
+    static private class LoadSickPersonAndSavedPoints extends AsyncTask<String, Void, SickPerson> {
 
         private WeakReference<MainActivity> wrActivity;
 
-        public SickPersonDaoGetByName(MainActivity activity) {
+        public LoadSickPersonAndSavedPoints(MainActivity activity) {
             this.wrActivity = new WeakReference<>(activity);
         }
 
@@ -735,7 +736,9 @@ public class MainActivity extends AppCompatActivity implements PickSickDialog.Pi
 
         @Override
         protected void onPostExecute(SickPerson sickPerson) {
-            wrActivity.get().setPerson(sickPerson);
+            MainActivity activity = wrActivity.get();
+            activity.setPerson(sickPerson);
+            activity.loadSavedPoints(activity.getPreferences(Activity.MODE_PRIVATE));
         }
     }
 

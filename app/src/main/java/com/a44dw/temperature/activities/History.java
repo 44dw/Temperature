@@ -216,9 +216,11 @@ public class History extends AppCompatActivity
         if((metrics.widthPixels < 700)&&(holder != null)) {
             warning.setVisibility(View.VISIBLE);
             holder.setVisibility(View.GONE);
+            onHideShowOnMainButton(true);
         } else if ((metrics.widthPixels > 700)&&(holder != null)) {
             warning.setVisibility(View.GONE);
             holder.setVisibility(View.VISIBLE);
+            onHideShowOnMainButton(false);
         }
     }
 
@@ -236,7 +238,7 @@ public class History extends AppCompatActivity
     }
 
     @Override
-    public void onNeedToChangeOrientation(boolean isNeed) {
+    public void onHideShowOnMainButton(boolean isNeed) {
         if(isNeed) showPointsOnMain.setVisibility(View.GONE);
         else showPointsOnMain.setVisibility(View.VISIBLE);
     }
